@@ -408,19 +408,29 @@ ShellRoot {
             return Quickshell.processId;
         }
         function state(): string {
+            function bounds(item) {
+                let start = item.mapToItem(panel.contentItem, 0, 0);
+                let end = item.mapToItem(panel.contentItem, item.width, item.height);
+                return {x: start.x, y: start.y, width: end.x - start.x, height: end.y - start.y};
+            }
             return JSON.stringify({visible: root.opened, query: input.text, apps: root.applications.length,
                                    results: root.results.map(result => ({id: result.id, title: result.title, kind: result.kind,
                                                                          icon: result.icon, line: result.line,
                                                                          image: result.image})),
                                    selected: root.selected, menu: root.menuMode, shell: root.shellMode, scroll: scroll.target,
-                                   height: card.height + 36, surfaceHeight: panel.height,
+                                   height: (card.height + 36) * config.scale, surfaceHeight: panel.height,
+                                   geometry: {card: bounds(card), firstRow: rows.count ? bounds(rows.itemAt(0)) : null,
+                                              surfaceWidth: panel.width, topMargin: panel.margins.top,
+                                              mask: bounds(inputShape), maskRadius: inputRegion.radius},
+                                   focus: {input: input.activeFocus, navigation: navigation.activeFocus,
+                                           grabbed: grab.active},
                                    screen: panel.screen.name, namespace: root.namespace,
                                    font: {family: root.fontFamily, ready: bundledFont.status === FontLoader.Ready},
                                    theme: {source: theme.path, base00: theme.base00.toString(),
                                            base05: theme.base05.toString(), accent: theme.base0D.toString(), dark: theme.dark},
                                    config: {source: config.path, opacity: config.opacity, cornerRadius: config.cornerRadius,
                                             borderOpacity: config.borderOpacity, width: config.width, topOffset: config.topOffset,
-                                            rows: config.rows, placeholder: config.placeholder,
+                                            scale: config.scale, rows: config.rows, placeholder: config.placeholder,
                                             font: {family: config.fontFamily, size: config.fontSize, searchSize: config.searchFontSize},
                                             search: config.searchOptions,
                                             history: {enable: config.historyEnabled, size: config.historySize}}});
@@ -490,11 +500,15 @@ ShellRoot {
         color: "transparent"
         anchors.top: true
         margins.top: Math.min(Math.round(screen.height * config.topOffset), Math.max(0, screen.height - implicitHeight))
-        implicitWidth: Math.min(config.width, screen.width - 48)
+        implicitWidth: Math.min(Math.ceil(config.width * config.scale), screen.width - 48)
         // Keep the Wayland surface stable; only the card inside it animates.
-        implicitHeight: Math.min(72 + config.rows * 62 + 16 + 36, screen.height)
+        implicitHeight: Math.min(Math.ceil((72 + config.rows * 62 + 16 + 36) * config.scale), screen.height)
         // Clicks pass through as soon as the panel starts closing.
-        mask: Region { item: root.opened ? card : null; radius: card.radius }
+        mask: Region {
+            id: inputRegion
+            item: root.opened ? inputShape : null
+            radius: inputShape.radius
+        }
         exclusionMode: ExclusionMode.Ignore
         WlrLayershell.namespace: root.namespace
         WlrLayershell.layer: WlrLayer.Overlay
@@ -504,6 +518,26 @@ ShellRoot {
             id: grab
             windows: [panel]
             onCleared: if (root.opened) root.hidePanel()
+        }
+
+        // All visual dimensions stay in base pixels, including fonts, rows and icons.
+        // The surface uses scaled bounds so input and clipping match the rendered card.
+        Item {
+            id: scaledContent
+            width: panel.width / config.scale
+            height: panel.height / config.scale
+            scale: config.scale
+            transformOrigin: Item.TopLeft
+        }
+        // Region tracks item geometry but not transforms on ancestors. Mirror the
+        // transformed card into panel coordinates so pointer input scales with it.
+        Item {
+            id: inputShape
+            readonly property real radius: Math.round(card.radius * shape.zoom * config.scale)
+            x: shape.x * config.scale
+            y: shape.y * config.scale
+            width: shape.width * config.scale
+            height: shape.height * config.scale
         }
 
         // Loads the thumbnails of a menu waiting to replace this one. The rows built afterwards
@@ -529,7 +563,7 @@ ShellRoot {
         // A new result count redirects the motion without restarting it.
         Spring {
             id: expansion
-            target: Math.min(root.searchHeight + root.resultsHeight, panel.implicitHeight - 36)
+            target: Math.min(root.searchHeight + root.resultsHeight, scaledContent.height - 36)
             enabled: panel.visible
         }
 
@@ -579,7 +613,9 @@ ShellRoot {
         // pixels shimmer, so this follows the card's edges snapped to whole device pixels.
         Item {
             id: shape
-            readonly property real ratio: Math.max(1, panel.devicePixelRatio)
+            parent: scaledContent
+            z: 0
+            readonly property real ratio: Math.max(0.01, panel.devicePixelRatio * config.scale)
             readonly property real zoom: presenceScale.xScale
             function snap(value) { return Math.round(value * ratio) / ratio; }
             // The card's edges after presenceScale, which scales about the search row's middle.
@@ -611,6 +647,8 @@ ShellRoot {
 
         Rectangle {
             id: card
+            parent: scaledContent
+            z: 1
             x: 16
             y: 12
             width: parent.width - 32

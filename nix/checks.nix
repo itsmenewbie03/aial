@@ -78,6 +78,7 @@ let
       palette = "/etc/palette.json";
       opacity = 0.5;
       cornerRadius = 12;
+      scale = 0.75;
       rows = 5;
       placeholder = "Find";
       font = {
@@ -136,6 +137,7 @@ let
         opacity = 0.8;
         cornerRadius = 22;
         borderOpacity = 0.2;
+        scale = 1.0;
         width = 680;
         topOffset = 0.22;
         rows = 7;
@@ -187,6 +189,7 @@ let
         opacity = 0.5;
         cornerRadius = 12;
         borderOpacity = 0.2;
+        scale = 0.75;
         width = 680;
         topOffset = 0.22;
         rows = 5;

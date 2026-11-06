@@ -209,6 +209,7 @@ this file from `programs.aial`, with the same names:
 {
   "colors": { "base00": "#1e1e2e", "base0D": "#89b4fa" },
   "opacity": 0.85,
+  "scale": 0.8,
   "rows": 6,
   "search": { "matching": "fuzzy" },
   "history": { "size": 50 }
@@ -223,6 +224,7 @@ this file from `programs.aial`, with the same names:
 | `cornerRadius` | `22` | Corner radius in pixels, 0 to 36. |
 | `borderOpacity` | `0.2` | Opacity of the 1 px `base05` border, as Hyprland draws on windows. 0 hides it. |
 | `width` | `680` | Panel width in pixels, 320 to 1600, and never wider than the screen less 48. |
+| `scale` | `1` | Proportional scale for the whole launcher, 0.5 to 2. |
 | `topOffset` | `0.22` | Distance from the top as a share of the screen's height, 0 to 0.8. |
 | `rows` | `7` | Results shown before the list scrolls, 1 to 12. |
 | `placeholder` | `"Search apps"` | Text of the empty search field. |

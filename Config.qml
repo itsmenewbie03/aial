@@ -43,6 +43,7 @@ QtObject {
 
     // The panel's width in pixels, its distance from the top as a share of the screen's
     // height, and how many results show before the list scrolls.
+    readonly property real scale: number(values.scale, 1, 0.5, 2)
     readonly property int width: integer(values.width, 680, 320, 1600)
     readonly property real topOffset: number(values.topOffset, 0.22, 0, 0.8)
     readonly property int rows: integer(values.rows, 7, 1, 12)

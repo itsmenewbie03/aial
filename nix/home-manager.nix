@@ -41,6 +41,7 @@ let
       opacity
       cornerRadius
       borderOpacity
+      scale
       width
       topOffset
       rows
@@ -167,6 +168,12 @@ in
       type = types.ints.between 320 1600;
       default = 680;
       description = "Width of the panel in pixels. It is never wider than the screen less 48 px.";
+    };
+
+    scale = mkOption {
+      type = types.numbers.between 0.5 2.0;
+      default = 1.0;
+      description = "Scale applied proportionally to the whole launcher, from 0.5 to 2.";
     };
 
     topOffset = mkOption {
