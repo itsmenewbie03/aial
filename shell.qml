@@ -509,6 +509,10 @@ ShellRoot {
             item: root.opened ? inputShape : null
             radius: inputShape.radius
         }
+        BackgroundEffect.blurRegion: Region {
+            item: root.opened ? inputShape : null
+            radius: inputShape.radius
+        }
         exclusionMode: ExclusionMode.Ignore
         WlrLayershell.namespace: root.namespace
         WlrLayershell.layer: WlrLayer.Overlay
@@ -571,9 +575,9 @@ ShellRoot {
         Spring {
             id: presence
             target: 1
-            response: 0.32
-            damping: 0.72
-            precision: 0.002
+            response: 0.16
+            damping: 0.9
+            precision: 0.006
             enabled: panel.visible
         }
         // The search icon turns from a magnifying glass into a shell prompt.
